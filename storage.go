@@ -5,8 +5,15 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+type Storage interface {
+	Insert(data interface{}) error
+	Find(key string, value string, outputType interface{}) interface{}
+	GetRandom(result interface{}) (interface{}, error)
+	Close()
+}
+
 type (
-	Storage struct {
+	storage struct {
 		Session    *mgo.Session
 		Collection *mgo.Collection
 	}
@@ -18,7 +25,7 @@ type DbConfig struct {
 	Url            string
 }
 
-func (storage *Storage) NewStorage(dbConfig DbConfig) (*Storage, error) {
+func NewStorage(dbConfig DbConfig) (Storage, error) {
 
 	var url = dbConfig.Url
 	var collectionName = dbConfig.CollectionName
@@ -32,21 +39,21 @@ func (storage *Storage) NewStorage(dbConfig DbConfig) (*Storage, error) {
 
 	collection := session.DB(databaseName).C(collectionName)
 
-	return &Storage{session, collection}, nil
+	return &storage{session, collection}, nil
 }
 
-func (storage *Storage) Insert(data interface{}) error {
-	return storage.Collection.Insert(data)
+func (store *storage) Insert(data interface{}) error {
+	return store.Collection.Insert(data)
 }
 
-func (storage *Storage) Find(key string, value string, outputType interface{}) interface{} {
-	storage.Collection.Find(bson.M{key: value}).One(&outputType)
+func (store *storage) Find(key string, value string, outputType interface{}) interface{} {
+	store.Collection.Find(bson.M{key: value}).One(&outputType)
 
 	return outputType
 }
 
-func (storage *Storage) GetRandom(result interface{}) (interface{}, error) {
-	pipe := storage.Collection.Pipe([]bson.M{{"$sample": bson.M{"size": 1}}})
+func (store *storage) GetRandom(result interface{}) (interface{}, error) {
+	pipe := store.Collection.Pipe([]bson.M{{"$sample": bson.M{"size": 1}}})
 
 	var err = pipe.One(result)
 
@@ -57,6 +64,6 @@ func (storage *Storage) GetRandom(result interface{}) (interface{}, error) {
 	return result, nil
 }
 
-func (storage *Storage) Close() {
-	storage.Session.Close()
+func (store *storage) Close() {
+	store.Session.Close()
 }
