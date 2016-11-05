@@ -61,10 +61,9 @@ func (store *storage) Find(key string, value string, outputType interface{}) (in
 }
 
 func (store *storage) ListAll(outputType interface{}) (interface{}, error) {
-	err := store.Collection.Find(nil).All(&outputType)
+	err := store.Collection.Find(nil).All(outputType)
 
 	return outputType, err
-
 }
 
 func (store *storage) GetRandom(result interface{}) (interface{}, error) {
