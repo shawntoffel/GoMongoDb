@@ -55,9 +55,15 @@ func (store *storage) Upsert(key string, value string, data interface{}) error {
 }
 
 func (store *storage) Find(key string, value string, outputType interface{}) (interface{}, error) {
-	err := store.Collection.Find(bson.M{key: value}).One(&outputType)
+	err := store.Collection.Find(bson.M{key: value}).One(outputType)
 
 	return outputType, err
+}
+
+func (store *storage) Remove(key string, value string) error {
+	err := store.Collection.Remove(bson.M{key: value})
+
+	return err
 }
 
 func (store *storage) ListAll(outputType interface{}) (interface{}, error) {
