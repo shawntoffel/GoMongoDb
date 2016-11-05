@@ -9,6 +9,7 @@ type Storage interface {
 	Insert(data interface{}) error
 	Upsert(key string, value string, data interface{}) error
 	Find(key string, value string, outputType interface{}) (interface{}, error)
+	Remove(key string, value string) error
 	ListAll(outputType interface{}) (interface{}, error)
 	GetRandom(result interface{}) (interface{}, error)
 	Close()
