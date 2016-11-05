@@ -7,6 +7,7 @@ import (
 
 type Storage interface {
 	Insert(data interface{}) error
+	Upsert(key string, value string, data interface{}) error
 	Find(key string, value string, outputType interface{}) (interface{}, error)
 	ListAll(outputType interface{}) (interface{}, error)
 	GetRandom(result interface{}) (interface{}, error)
@@ -45,6 +46,12 @@ func NewStorage(dbConfig DbConfig) (Storage, error) {
 
 func (store *storage) Insert(data interface{}) error {
 	return store.Collection.Insert(data)
+}
+
+func (store *storage) Upsert(key string, value string, data interface{}) error {
+	_, err := store.Collection.Upsert(bson.M{key: value}, data)
+
+	return err
 }
 
 func (store *storage) Find(key string, value string, outputType interface{}) (interface{}, error) {
