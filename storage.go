@@ -7,7 +7,8 @@ import (
 
 type Storage interface {
 	Insert(data interface{}) error
-	Find(key string, value string, outputType interface{}) interface{}
+	Find(key string, value string, outputType interface{}) (interface{}, error)
+	ListAll(outputType interface{}) (interface{}, error)
 	GetRandom(result interface{}) (interface{}, error)
 	Close()
 }
@@ -46,10 +47,17 @@ func (store *storage) Insert(data interface{}) error {
 	return store.Collection.Insert(data)
 }
 
-func (store *storage) Find(key string, value string, outputType interface{}) interface{} {
-	store.Collection.Find(bson.M{key: value}).One(&outputType)
+func (store *storage) Find(key string, value string, outputType interface{}) (interface{}, error) {
+	err := store.Collection.Find(bson.M{key: value}).One(&outputType)
 
-	return outputType
+	return outputType, err
+}
+
+func (store *storage) ListAll(outputType interface{}) (interface{}, error) {
+	err := store.Collection.Find(nil).All(&outputType)
+
+	return outputType, err
+
 }
 
 func (store *storage) GetRandom(result interface{}) (interface{}, error) {
