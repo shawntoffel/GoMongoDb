@@ -75,7 +75,7 @@ func (store *storage) ListAllWithSort(outputType interface{}, sort string) (inte
 }
 
 func (store *storage) ListAll(outputType interface{}) (interface{}, error) {
-	err := store.Collection.Find(nil).All(&outputType)
+	err := store.Collection.Find(nil).All(outputType)
 
 	return outputType, err
 }
