@@ -10,7 +10,8 @@ type Storage interface {
 	Upsert(key string, value string, data interface{}) error
 	Find(key string, value string, outputType interface{}) (interface{}, error)
 	Remove(key string, value string) error
-	ListAll(outputType interface{}, sort string) (interface{}, error)
+	ListAllWithSort(outputType interface{}, sort string) (interface{}, error)
+	ListAll(outputType interface{}) (interface{}, error)
 	GetRandom(result interface{}) (interface{}, error)
 	Close()
 }
@@ -67,8 +68,14 @@ func (store *storage) Remove(key string, value string) error {
 	return err
 }
 
-func (store *storage) ListAll(outputType interface{}, sort string) (interface{}, error) {
+func (store *storage) ListAllWithSort(outputType interface{}, sort string) (interface{}, error) {
 	err := store.Collection.Find(nil).Sort(sort).All(outputType)
+
+	return outputType, err
+}
+
+func (store *storage) ListAll(outputType interface{}) (interface{}, error) {
+	err := store.Collection.Find(nil).All(outputType)
 
 	return outputType, err
 }
