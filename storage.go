@@ -11,6 +11,7 @@ type Storage interface {
 	Find(key string, value string, outputType interface{}) (interface{}, error)
 	Remove(key string, value string) error
 	ListAllWithSort(outputType interface{}, sort string) (interface{}, error)
+	ListAllWithSortIgnoreCase(outputType interface{}, sort string) (interface{}, error)
 	ListAll(outputType interface{}) (interface{}, error)
 	GetRandom(result interface{}) (interface{}, error)
 	Close()
@@ -70,6 +71,17 @@ func (store *storage) Remove(key string, value string) error {
 
 func (store *storage) ListAllWithSort(outputType interface{}, sort string) (interface{}, error) {
 	err := store.Collection.Find(nil).Sort(sort).All(outputType)
+
+	return outputType, err
+}
+
+func (store *storage) ListAllWithSortIgnoreCase(outputType interface{}, sort string) (interface{}, error) {
+	pipe := store.Collection.Pipe([]bson.M{
+		{"$project": bson.M{
+			sort: 1, "insensitive": bson.M{"$toLower": "$" + sort},
+		}}, {"$sort": bson.M{"insensitive": 1}}})
+
+	var err = pipe.All(outputType)
 
 	return outputType, err
 }
