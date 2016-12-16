@@ -63,13 +63,7 @@ func (store *storage) Upsert(key string, value string, data interface{}, outputT
 }
 
 func (store *storage) UpsertField(key string, value string, fieldKey string, fieldValue string, outputType interface{}) error {
-	_, err := store.Collection.Upsert(bson.M{key: value}, bson.M{"$set": bson.M{fieldKey: fieldValue}})
-
-	if err != nil {
-		return err
-	}
-
-	err = store.Find(key, value, outputType)
+	err := store.Upsert(key, value, bson.M{"$set": bson.M{fieldKey: fieldValue}}, outputType)
 
 	return err
 }
