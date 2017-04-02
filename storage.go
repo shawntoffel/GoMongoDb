@@ -10,6 +10,7 @@ type Storage interface {
 	Upsert(key string, value string, data interface{}, outputType interface{}) error
 	UpsertField(key string, value string, fieldKey string, fieldValue string, outputType interface{}) error
 	Find(key string, value string, outputType interface{}) error
+	FindAll(key string, value string, outputType interface{}) error
 	Remove(key string, value string) error
 	ListAllWithSort(outputType interface{}, sort string) error
 	ListAll(outputType interface{}) error
@@ -70,6 +71,10 @@ func (store *storage) UpsertField(key string, value string, fieldKey string, fie
 
 func (store *storage) Find(key string, value string, outputType interface{}) error {
 	return store.Collection.Find(bson.M{key: value}).One(outputType)
+}
+
+func (store *storage) FindAll(key string, value string, outputType interface{}) error {
+	return store.Collection.Find(bson.M{key: value}).All(outputType)
 }
 
 func (store *storage) Remove(key string, value string) error {
