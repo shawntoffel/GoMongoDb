@@ -2,28 +2,16 @@ package storage
 
 import (
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Storage interface {
-	Insert(data interface{}) error
-	Upsert(key string, value string, data interface{}, outputType interface{}) error
-	UpsertField(key string, value string, fieldKey string, fieldValue string, outputType interface{}) error
-	Find(key string, value string, outputType interface{}) error
-	FindAll(key string, value string, outputType interface{}) error
-	Remove(key string, value string) error
-	ListAllWithSort(outputType interface{}, sort string) error
-	ListAll(outputType interface{}) error
-	GetRandom(result interface{}) (interface{}, error)
 	Close()
 }
 
-type (
-	storage struct {
-		Session    *mgo.Session
-		Collection *mgo.Collection
-	}
-)
+type Store struct {
+	Session    *mgo.Session
+	Collection *mgo.Collection
+}
 
 type DbConfig struct {
 	DatabaseName   string
@@ -31,7 +19,7 @@ type DbConfig struct {
 	Url            string
 }
 
-func NewStorage(dbConfig DbConfig) (Storage, error) {
+func NewStorage(dbConfig DbConfig) (*Store, error) {
 	var url = dbConfig.Url
 	var collectionName = dbConfig.CollectionName
 	var databaseName = dbConfig.DatabaseName
@@ -44,63 +32,9 @@ func NewStorage(dbConfig DbConfig) (Storage, error) {
 
 	collection := session.DB(databaseName).C(collectionName)
 
-	return &storage{session, collection}, nil
+	return &Store{session, collection}, nil
 }
 
-func (store *storage) Insert(data interface{}) error {
-	return store.Collection.Insert(data)
-}
-
-func (store *storage) Upsert(key string, value string, data interface{}, outputType interface{}) error {
-	_, err := store.Collection.Upsert(bson.M{key: value}, data)
-
-	if err != nil {
-		return err
-	}
-
-	err = store.Find(key, value, outputType)
-
-	return err
-}
-
-func (store *storage) UpsertField(key string, value string, fieldKey string, fieldValue string, outputType interface{}) error {
-	err := store.Upsert(key, value, bson.M{"$set": bson.M{fieldKey: fieldValue}}, outputType)
-
-	return err
-}
-
-func (store *storage) Find(key string, value string, outputType interface{}) error {
-	return store.Collection.Find(bson.M{key: value}).One(outputType)
-}
-
-func (store *storage) FindAll(key string, value string, outputType interface{}) error {
-	return store.Collection.Find(bson.M{key: value}).All(outputType)
-}
-
-func (store *storage) Remove(key string, value string) error {
-	return store.Collection.Remove(bson.M{key: value})
-}
-
-func (store *storage) ListAllWithSort(outputType interface{}, sort string) error {
-	return store.Collection.Find(nil).Sort(sort).All(outputType)
-}
-
-func (store *storage) ListAll(outputType interface{}) error {
-	return store.Collection.Find(nil).All(outputType)
-}
-
-func (store *storage) GetRandom(result interface{}) (interface{}, error) {
-	pipe := store.Collection.Pipe([]bson.M{{"$sample": bson.M{"size": 1}}})
-
-	var err = pipe.One(result)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-func (store *storage) Close() {
+func (store *Store) Close() {
 	store.Session.Close()
 }
