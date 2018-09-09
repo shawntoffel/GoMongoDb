@@ -20,17 +20,17 @@ type DbConfig struct {
 }
 
 func NewStorage(dbConfig DbConfig) (*Store, error) {
-	var url = dbConfig.Url
-	var collectionName = dbConfig.CollectionName
-	var databaseName = dbConfig.DatabaseName
+	url := dbConfig.Url
+	if url == "" {
+		url = "localhost"
+	}
 
 	session, err := mgo.Dial(url)
-
 	if err != nil {
 		return nil, err
 	}
 
-	collection := session.DB(databaseName).C(collectionName)
+	collection := session.DB(dbConfig.DatabaseName).C(dbConfig.CollectionName)
 
 	return &Store{session, collection}, nil
 }
